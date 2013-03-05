@@ -19,4 +19,5 @@ easyui+django demo
  
 ------------------
 easyui: http://www.jeasyui.com/
+
 django: https://www.djangoproject.com/
