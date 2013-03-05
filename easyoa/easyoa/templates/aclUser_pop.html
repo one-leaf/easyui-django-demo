@@ -1,0 +1,63 @@
+<div style="padding: 5px;overflow: hidden;">
+    <form id="user_form" method="post">{% csrf_token %}
+        <p>{{ form.code.label }}: {{ form.code }}</p>
+        <p>{{ form.name.label }}: {{ form.name }}</p>
+        <p>{{ form.department.label }}: {{ form.department }}
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" onclick="queryDepartment()"></a>
+        </p>
+        <p>{{ form.birthday.label }}: {{ form.birthday }}</p>
+    </form>
+</div>
+
+<script type="text/javascript">   
+    function saveUser(url,action) {
+        var f = $('#user_form').form();
+        $('#user_form').form('submit', {
+            url: url,
+            success: function(r) {
+                var obj = jQuery.parseJSON(r);
+                if (obj.success) {
+                    var d = getFrameComponent('#user_datagrid');
+                    //                    console.info(d);
+                    if (action=='edit') {
+                        d.datagrid('updateRow', {
+                            index: d.datagrid('getRowIndex', obj.obj.id),
+                            row: obj.obj
+                        });
+                    } else {
+                        d.datagrid('insertRow', {
+                            index: 0,
+                            row: obj.obj
+                        });
+                    }
+                    d.datagrid('selectRecord', obj.obj.id);
+                    $('#user_dialog').dialog('close');
+                }
+                $.messager.show({
+                    title: '提示',
+                    msg: obj.msg
+                });
+            },
+        });
+    }  
+
+    function queryDepartment() {
+        dialog({
+               id: 'department_query',
+               title: '查询部门',
+               href: '/department/query',
+               width: 700,
+               height: 450,
+               buttons: [{
+                     text: '确定',
+                     handler: function() {
+                           var rows = $('#department_datagrid').datagrid('getChecked');
+                           if (rows.length > 0) {
+                                     $('#id_department').combogrid('setValue', rows[0].id);
+                              }
+                           $('#department_query').dialog('close');
+                        }
+               }],
+              });
+    }    
+</script>

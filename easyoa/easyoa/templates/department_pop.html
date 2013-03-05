@@ -1,0 +1,39 @@
+<div style="padding: 5px;overflow: hidden;">
+    <form id="department_form" method="post">{% csrf_token %}
+        {{ form.as_p }}
+    </form>
+</div>
+
+<script type="text/javascript">
+    function saveDepartment(url,action) {
+        var f =  $('#department_form').form();
+        $('#department_form').form('submit', {
+            url : url,
+            success : function(r) {
+                var obj = jQuery.parseJSON(r);
+                if (obj.success) {
+                    var d=getFrameComponent('#department_datagrid');
+                    //                    console.info(d);
+                    if(action=='edit'){
+                        d.datagrid('updateRow',{
+                            index:d.datagrid('getRowIndex',obj.obj.id),
+                            row:obj.obj
+                        });
+                    }else{
+                        d.datagrid('insertRow',{
+                            index:0,
+                            row:obj.obj
+                        });
+                    }
+                    d.datagrid('selectRecord',obj.obj.id);
+                    $('#department_dialog').dialog('close');
+                }
+                $.messager.show({
+                    title : '提示',
+                    msg : obj.msg
+                });
+            }
+        });
+    }
+    
+</script>

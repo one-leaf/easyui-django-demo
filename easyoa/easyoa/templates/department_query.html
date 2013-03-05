@@ -1,0 +1,41 @@
+<script type="text/javascript">
+
+        function searchDepartment() {
+            $('#department_datagrid').datagrid('load', serializeObject($('#department_searchForm')));
+        }
+     
+            
+</script>
+<div  class="easyui-layout" data-options="fit:true">
+
+    <div data-options="region:'north',title:'',border:false" style="height: 30px;">
+        <form id="department_searchForm">
+            检索部门名称(可模糊查询)：<input name="departmentName" /> 
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" onclick="searchDepartment()">查询</a> 
+            <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel',plain:true" onclick="clear()">清空</a>
+        </form>
+    </div>
+
+    <div data-options="region:'center',border:false" style="overflow: hidden;">
+        <!--            <table id="admin_yhgl_datagrid"></table>-->
+
+        <table class="easyui-datagrid" id="department_datagrid"    
+               data-options="rownumbers:true,
+               singleSelect:true, 
+               fit : true, 
+               fitColumns : true,
+               url:'/department/find',
+               idField : 'id',
+               method: 'get',
+               pagination : true,
+               border:false ">  
+            <thead>  
+                <tr>  
+                    <th data-options="field:'id',checkbox : true,width:80">ID</th>  
+                    <th data-options="field:'code',width:100">部门编号</th>  
+                    <th data-options="field:'name',width:80,align:'right'">部门名称</th>  
+                </tr>  
+            </thead>  
+        </table>  
+    </div>
+</div>

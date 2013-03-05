@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block js %}
+        <script type="text/javascript">
+
+            function searchDepartment() {
+                $('#department_datagrid').datagrid('load', serializeObject($('#department_searchForm')));
+            }
+           
+            function clear() {
+                $('#admin_yhgl_layout input[name=departmentName]').val('');
+                $('#department_datagrid').datagrid('load', {});
+            }
+            
+            function addDepartment() {
+                parent.dialog({
+                    id: 'department_dialog',
+                    title : '添加用户',
+                    href : '/department/add',
+                    width : 440,
+                    height : 200,
+                    buttons : [ {
+                            text : '保存',
+                            handler : function() {
+                                parent.saveDepartment('/department/add','add');
+                            }
+                        } ],
+                    onLoad : function() {
+                        parent.setState();                        
+                    }
+                });
+            }
+            
+            function editDepartment() {
+                var rows = $('#department_datagrid').datagrid('getSelections');
+                if (rows.length == 1) {
+                    var departmentId= rows[0].id;
+                    parent.dialog({
+                        id: 'department_dialog',
+                        title : '修改部门',
+                        href : '/department/edit/'+departmentId,
+                        width : 440,
+                        height : 200,
+                        buttons : [ {
+                                text : '保存',
+                                handler : function() {
+                                    parent.saveDepartment('/department/edit/'+departmentId,'edit');
+                                }
+                            } ],
+                        onLoad : function() {
+                            parent.setState();                        
+                        }
+                    });
+                } else if (rows.length > 1) {
+                    parent.messagerAlert('提示', '同一时间只能编辑一条记录！', 'error');
+                } else {
+                    parent.messagerAlert('提示', '请选择要编辑的记录！', 'error');
+                }
+            }
+            
+            function removeDepartment() {
+                var rows = $('#department_datagrid').datagrid('getChecked');
+                var ids = [];
+                if (rows.length > 0) {
+                    $.messager.confirm('确认', '您是否要删除当前选中的项目？', function(r) {
+                        if (r) {
+                            for ( var i = 0; i < rows.length; i++) {
+                                ids.push(rows[i].id);
+                            }
+                            $.ajax({
+                                url : '/department/del',
+                                data : {
+                                    ids : ids.join(',')
+                                },
+                                dataType : 'json',
+                                method: 'get',
+                                success : function(r) {
+                                    console.info('result:'+r.success);                                
+                                    if(r.success){
+                                        $('#department_datagrid').datagrid('load');
+                                        $('#department_datagrid').datagrid('unselectAll');                                        
+                                    }
+                                    $.messager.show({
+                                        title : '提示',
+                                        msg : r.msg
+                                    });
+                                },
+                                error:function (XMLHttpRequest, textStatus, errorThrown) {
+//                                    $.messager.show({
+//                                        title : '提示',
+//                                        msg : XMLHttpRequest.responseText
+//                                    });
+                                    alert(XMLHttpRequest.responseText);
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    $.messager.show({
+                        title : '提示',
+                        msg : '请勾选要删除的记录！'
+                    });
+                }
+            }
+            
+        </script>
+    </head>
+{% endblock %}
+
+{% block boby %}
+    <body  class="easyui-layout" data-options="fit:true">
+
+        <div data-options="region:'north',title:'查询条件',border:false" style="height: 100px;">
+            <form id="department_searchForm">
+                检索部门名称(可模糊查询)：<input name="departmentName" /> 
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" onclick="searchDepartment()">查询</a> 
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel',plain:true" onclick="clear()">清空</a>
+            </form>
+        </div>
+
+        <div data-options="region:'center',border:false" style="overflow: hidden;">
+            <!--            <table id="admin_yhgl_datagrid"></table>-->
+
+            <table class="easyui-datagrid" id="department_datagrid"    
+                   data-options="rownumbers:true,
+                   singleSelect:true, 
+                   fit : true, 
+                   fitColumns : true,
+                   url:'/department/find',
+                   idField : 'id',
+                   method: 'get',
+                   pagination : true,
+                   border:false,
+                   toolbar:'#toolbar' ">  
+                <thead>  
+                    <tr>  
+                        <th data-options="field:'id',checkbox : true,width:80">ID</th>  
+                        <th data-options="field:'code',width:100">部门编号</th>  
+                        <th data-options="field:'name',width:80,align:'right'">部门名称</th>  
+                    </tr>  
+                </thead>  
+            </table>  
+        </div>
+        <div id="toolbar" style="height:auto">  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="addDepartment()">新增</a>  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeDepartment()">删除</a>  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" onclick="editDepartment()">修改</a> 
+        </div>
+    </body>
+{% endblock %}

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <script src="/resources/jslib/boot.js" type="text/javascript"></script> 
+        <script src="/resources/js/djangoajax.js" type="text/javascript"></script> 
+        {% block js %}
+        {% endblock %}
+    </head>
+    {% block boby %}
+    <body class="easyui-layout">
+        <div data-options="region:'north'" style="height:60px;"></div>
+        <div data-options="region:'west',title:'功能导航',split:true" style="width:200px;">
+            {% block tree %}
+            {% endblock %}
+        </div>
+        <div data-options="region:'center',title:''" style="overflow: hidden;">
+            {% block center %}
+            {% endblock %}
+        </div>
+    </body>
+    {% endblock %}
+</html>

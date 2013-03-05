@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block js %}
+        <script type="text/javascript">
+            function searchUser() {
+                $('#user_datagrid').datagrid('load', serializeObject($('#user_searchForm')));
+            }
+            
+            function clear() {
+                $('#admin_yhgl_layout input[name=userName]').val('');
+                $('#user_datagrid').datagrid('load', {});
+            }
+            
+            function addUser() {
+                parent.dialog({
+                    id: 'user_dialog',
+                    title : '添加用户',
+                    href : '/aclUser/add',
+                    width : 440,
+                    height : 300,
+                    buttons : [ {
+                            text : '保存',
+                            handler : function() {                                
+                                parent.saveUser('/aclUser/add','add');
+                            }
+                        } ],
+                });
+            }
+            
+            function editUser() {
+                var rows = $('#user_datagrid').datagrid('getSelections');
+                if (rows.length == 1) {
+                    var userId= rows[0].id;
+//                    console.info('userId:'+rows[0].name);
+                    parent.dialog({
+                        id: 'user_dialog',
+                        title : '修改用户',
+                        href : '/aclUser/edit/'+userId,
+                        width : 440,
+                        height : 300,
+                        buttons : [ {
+                                text : '保存',
+                                iconCls:'icon-save',
+                                handler : function() {
+                                    parent.saveUser('/aclUser/edit/'+userId,'edit');
+                                }
+                            } ],
+                    });
+                } else if (rows.length > 1) {
+                    parent.messagerAlert('提示', '同一时间只能编辑一条记录！', 'error');
+                } else {
+                    parent.messagerAlert('提示', '请选择要编辑的记录！', 'error');
+                }
+            }
+            
+             function editUserPop() {
+                var rows = $('#user_datagrid').datagrid('getSelections');
+                if (rows.length == 1) {
+                    var userId= rows[0].id;
+                    parent.dialog({
+                        id: 'user_dialog',
+                        title : '修改用户',
+                        href : '/aclUser/edit/'+userId,
+                        width : 500,
+                        height : 300,
+                        buttons : [ {
+                                text : '保存',
+                                iconCls:'icon-save',
+                                handler : function() {
+                                    parent.saveUser('/aclUser/edit/'+userId,'edit');
+                                }
+                            } ],
+                    });
+                } else if (rows.length > 1) {
+                    parent.messagerAlert('提示', '同一时间只能编辑一条记录！', 'error');
+                } else {
+                    parent.messagerAlert('提示', '请选择要编辑的记录！', 'error');
+                }
+            }
+
+            
+            function removeUser() {
+                var rows = $('#user_datagrid').datagrid('getChecked');
+                var ids = [];
+                if (rows.length > 0) {
+                    $.messager.confirm('确认', '您是否要删除当前选中的项目？', function(r) {
+                        if (r) {
+                            for ( var i = 0; i < rows.length; i++) {
+                                ids.push(rows[i].id);
+                            }
+                            $.ajax({
+                                url : '/aclUser/del',
+                                data : {
+                                    ids : ids.join(',')
+                                },
+                                method: 'get',
+                                dataType : 'json',
+                                success : function(r) {
+                                    $('#user_datagrid').datagrid('load');
+                                    $('#user_datagrid').datagrid('unselectAll');
+                                    $.messager.show({
+                                        title : '提示',
+                                        msg : r.msg
+                                    });
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    $.messager.show({
+                        title : '提示',
+                        msg : '请勾选要删除的记录！'
+                    });
+                }
+            }
+            
+            //            var toolbar=[{  
+            //                    text:'Add',  
+            //                    iconCls:'icon-add',  
+            //                    handler:function(){append();}  
+            //                },{  
+            //                    text:'Cut',  
+            //                    iconCls:'icon-cut',  
+            //                    handler:function(){alert('cut')}  
+            //                },'-',{  
+            //                    text:'Save',  
+            //                    iconCls:'icon-save',  
+            //                    handler:function(){alert('save')}  
+            //                }] ;
+        </script>
+{% endblock %}
+
+{% block boby %}
+    <body  class="easyui-layout" data-options="fit:true">
+
+        <div data-options="region:'north',title:'查询条件',border:false" style="height: 100px;">
+            <form id="user_searchForm">
+                检索用户名称(可模糊查询)：<input name="userName" /> 
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" onclick="searchUser()">查询</a> 
+                <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-cancel',plain:true" onclick="clear()">清空</a>
+            </form>
+        </div>
+
+        <div data-options="region:'center',border:false" style="overflow: hidden;">
+            <table class="easyui-datagrid" id="user_datagrid"    
+                   data-options="rownumbers:true,
+                   singleSelect:true, 
+                   fit : true, 
+                   method: 'get',
+                   fitColumns : true,
+                   url:'/aclUser/find',
+                   idField : 'id',
+                   pagination : true,
+                   border:false,
+                   toolbar:'#toolbar' ">  
+                <thead>  
+                    <tr>  
+                        <th data-options="field:'id',checkbox:true,width:30">ID</th>  
+                        <th data-options="field:'code',width:40">用户编号</th>  
+                        <th data-options="field:'name',width:80,align:'right'">用户名称</th>  
+                        <th data-options="field:'department',width:80,align:'right'">部门名称</th>  
+                        <th data-options="field:'birthday',width:80,align:'right'">生日</th>  
+                    </tr>  
+                </thead>  
+            </table>  
+        </div>
+        <div id="toolbar" style="height:auto">  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="addUser()">新增</a>  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove',plain:true" onclick="removeUser()">删除</a>  
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" onclick="editUser()">修改1</a> 
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit',plain:true" onclick="editUserPop()">修改2</a>
+        </div>
+    </body>
+{% endblock %}

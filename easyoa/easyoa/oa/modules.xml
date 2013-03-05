@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE quote [ <!ATTLIST sub_system id ID #IMPLIED> ]>
+<root>
+    <sub_system id="sub_system_jczl" text="基础资料" iconCls="">
+        <!--module可以多层嵌套-->
+        <module id="module_yhgls" text="用户管理" iconCls="icon-ok" url="">
+            <module id="module_bmgl" text="部门管理" iconCls="icon-help" url="/department"/>
+            <module id="module_yhgl" text="用户管理" iconCls="icon-reload" url="/aclUser"/>
+            <module id="module_jsgl" text="角色管理" iconCls="icon-search" url=""/>
+            <module id="module_qxgl" text="权限管理" iconCls="icon-print" url=""/>
+        </module>
+    </sub_system>
+    <sub_system id="sub_system_wtjl" text="培训资料" iconCls="icon-reload">
+        <module id="module_wtjl" text="问题积累" iconCls="icon-reload" url=""/>
+        <module id="module_pxwd" text="培训文档" iconCls="icon-reload" url=""/>
+    </sub_system>
+</root>

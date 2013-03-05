@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block tree %}
+<script  type="text/javascript" charset="utf-8">    
+    $(function() {
+        $.ajax({
+            url : '/menu/getAccordionItem',                               
+            dataType : 'json',
+            success : function(data) {
+                for (i = 0; i< data.length;  i++) {
+                    var selected=(i==0?'true':'false');
+                    $('#layout_west_accordion').accordion('add',{  
+                        title:data[i].text,  
+                        content:'<div style="padding:10px" data-options="fit:true,border:false,selected:'+selected+'"><ul id="layout_west_tree_'+data[i].id+'" class="easyui-tree"></ul></div>'  
+                    });                      
+                }             
+                                
+                for (i = 0; i< data.length;  i++) {
+                    $('#layout_west_tree_'+data[i].id).tree({
+                        url : '/menu/getAllTreeNode/'+data[i].id,
+                        parentField : 'pid',
+                        lines : true,
+                        method: 'get',
+                        onClick : function(node) {
+                            if (node.attributes.url) {
+                                addTab(node.text,node.attributes.url,node.iconCls);
+                            }
+                        }
+                    });   
+                }
+          
+            }
+        });
+
+    });
+</script>
+<div class="easyui-panel" data-options="border:false,fit:true">
+    <div id="layout_west_accordion" class="easyui-accordion" data-options="fit:true,border:false">
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block center %}
+<script type="text/javascript">   
+    var centerTabs;
+    var tabsMenu;
+    $(function() {
+        tabsMenu = $('#tabsMenu').menu({
+            onClick : function(item) {
+                var curTabTitle = $(this).data('tabTitle');
+                var type = $(item.target).attr('type');
+
+                if (type === 'refresh') {
+                    refreshTab(curTabTitle);
+                    return;
+                }
+
+                if (type === 'close') {
+                    var t = centerTabs.tabs('getTab', curTabTitle);
+                    if (t.panel('options').closable) {
+                        centerTabs.tabs('close', curTabTitle);
+                    }
+                    return;
+                }
+
+                var allTabs = centerTabs.tabs('tabs');
+                var closeTabsTitle = [];
+
+                $.each(allTabs, function() {
+                    var opt = $(this).panel('options');
+                    if (opt.closable && opt.title != curTabTitle && type === 'closeOther') {
+                        closeTabsTitle.push(opt.title);
+                    } else if (opt.closable && type === 'closeAll') {
+                        closeTabsTitle.push(opt.title);
+                    }
+                });
+
+                for ( var i = 0; i < closeTabsTitle.length; i++) {
+                    centerTabs.tabs('close', closeTabsTitle[i]);
+                }
+            }
+        });
+
+        centerTabs = $('#layout_center_tabs').tabs({
+            fit : true,
+            border : false,
+            onContextMenu : function(e, title) {
+                e.preventDefault();
+                tabsMenu.menu('show', {
+                    left : e.pageX,
+                    top : e.pageY
+                }).data('tabTitle', title);
+            }
+        });
+    });
+//    function addTab(opts) {
+//		var t = $('#layout_center_tabs');
+//		if (t.tabs('exists', opts.title)) {
+//			t.tabs('select', opts.title);
+//		} else {
+//			t.tabs('add', opts);
+//		}
+//	}
+
+    function addTab(cname,curl,ciconCls) {
+    var id=curl.replace('.jsp','').replace(/\//g, '');
+        if (centerTabs.tabs('exists', cname)) {
+            centerTabs.tabs('select', cname);
+        } else {
+            if (curl && curl.length > 0) {
+                centerTabs.tabs('add', {
+                   // id:curl.replace('.jsp','').replace(/\//g, ''),
+                    title : cname,
+                    closable : true,
+                    iconCls : ciconCls,
+                    content : '<iframe "'+id+'" src="' + curl + '" frameborder="0" style="border:0;width:100%;height:99.4%;"></iframe>',
+                    tools : [ {
+                            iconCls : 'icon-mini-refresh',
+                            handler : function() {
+                                refreshTab(cname);
+                            }
+                        } ]
+                });
+            } else {
+                centerTabs.tabs('add', {
+                    //id:curl.replace('.jsp','').replace(/\//g, ''),
+                    title : cname,
+                    closable : true,
+                    iconCls : ciconCls,
+                    content : '<iframe id="'+id+'" src="error/err.jsp" frameborder="0" style="border:0;width:100%;height:99.4%;"></iframe>',
+                    tools : [ {
+                            iconCls : 'icon-mini-refresh',
+                            handler : function() {
+                                refreshTab(cname);
+                            }
+                        } ]
+                });
+            }
+        }
+    }
+    function refreshTab(title) {
+        var tab = centerTabs.tabs('getTab', title);
+        centerTabs.tabs('update', {
+            tab : tab,
+            options : tab.panel('options')
+        });
+//$('#layout_center_tabs').tabs('getTab', title).panel('refresh');
+    }
+</script>
+<div id="layout_center_tabs">
+    <div title="首页"></div>
+</div>
+<div id="tabsMenu" style="width: 120px;display:none;">
+    <div type="refresh">刷新</div>
+    <div class="menu-sep"></div>
+    <div type="close">关闭</div>
+    <div type="closeOther">关闭其他</div>
+    <div type="closeAll">关闭所有</div>
+</div>
+{% endblock %}
